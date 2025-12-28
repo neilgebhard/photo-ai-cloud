@@ -1,0 +1,38 @@
+# Terraform files
+.terraform/
+*.tfstate
+*.tfstate.backup
+*.tfstate.lock.info
+.terraform.lock.hcl
+
+# Environment variables
+.env
+.env.local
+
+# AWS credentials
+.aws/
+
+# Node modules
+node_modules/
+
+# Build outputs
+dist/
+build/
+.next/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+npm-debug.log*
+
+# Lambda deployment packages
+*.zip
