@@ -35,3 +35,6 @@ npm-debug.log*
 
 # Lambda deployment packages
 *.zip
+
+# Project files
+TODOs.md
