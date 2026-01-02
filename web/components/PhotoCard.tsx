@@ -1,5 +1,8 @@
 'use client';
 
+import { useState, useEffect } from 'react';
+import Image from 'next/image';
+
 interface Photo {
   photoId: string;
   userId: string;
@@ -16,18 +19,63 @@ interface PhotoCardProps {
 }
 
 export default function PhotoCard({ photo }: PhotoCardProps) {
-  // TODO: Generate presigned URLs for actual image display
-  const thumbnailUrl = `/api/photos/${photo.photoId}/thumbnail`;
+  const [thumbnailUrl, setThumbnailUrl] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
+
+  useEffect(() => {
+    async function fetchThumbnail() {
+      try {
+        const response = await fetch(
+          `/api/photos/${photo.photoId}/thumbnail?userId=${photo.userId}&thumbnailKey=${encodeURIComponent(photo.thumbnailKey)}`
+        );
+
+        if (!response.ok) {
+          throw new Error('Failed to fetch thumbnail');
+        }
+
+        const data = await response.json();
+        setThumbnailUrl(data.url);
+        setError(false);
+      } catch (err) {
+        console.error('Error fetching thumbnail:', err);
+        setError(true);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    fetchThumbnail();
+  }, [photo.photoId, photo.userId, photo.thumbnailKey]);
 
   return (
     <div className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow">
-      {/* Placeholder for thumbnail */}
-      <div className="aspect-square bg-gradient-to-br from-blue-100 to-purple-100 flex items-center justify-center">
-        <div className="text-center p-4">
-          <p className="text-sm text-gray-600 font-mono break-all">
-            {photo.thumbnailKey}
-          </p>
-        </div>
+      {/* Thumbnail image */}
+      <div className="aspect-square bg-gray-100 relative overflow-hidden">
+        {loading && (
+          <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-blue-100 to-purple-100">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
+          </div>
+        )}
+
+        {error && (
+          <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-red-100 to-orange-100">
+            <div className="text-center p-4">
+              <p className="text-sm text-red-600">Failed to load image</p>
+            </div>
+          </div>
+        )}
+
+        {thumbnailUrl && !error && (
+          <Image
+            src={thumbnailUrl}
+            alt={photo.labels[0] || 'Photo'}
+            fill
+            className="object-cover"
+            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+            onError={() => setError(true)}
+          />
+        )}
       </div>
 
       {/* Photo metadata */}
