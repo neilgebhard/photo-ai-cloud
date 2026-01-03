@@ -1,8 +1,11 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
+import { useAuth } from '@/contexts/AuthContext';
 import PhotoCard from './PhotoCard';
 import PhotoUpload from './PhotoUpload';
+import LoginForm from './Auth/LoginForm';
+import SignUpForm from './Auth/SignUpForm';
 
 interface Photo {
   photoId: string;
@@ -22,21 +25,22 @@ interface PhotosResponse {
 }
 
 export default function PhotoGallery() {
+  const { user, loading: authLoading, signOut } = useAuth();
   const [photos, setPhotos] = useState<Photo[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [userId, setUserId] = useState('');
   const [showUpload, setShowUpload] = useState(false);
+  const [showLogin, setShowLogin] = useState(true);
 
   const fetchPhotos = useCallback(async () => {
-    if (!userId) {
+    if (!user) {
       setLoading(false);
       return;
     }
 
     try {
       setLoading(true);
-      const response = await fetch(`/api/photos?userId=${userId}`);
+      const response = await fetch(`/api/photos?userId=${user.userId}`);
 
       if (!response.ok) {
         throw new Error('Failed to fetch photos');
@@ -50,29 +54,30 @@ export default function PhotoGallery() {
     } finally {
       setLoading(false);
     }
-  }, [userId]);
+  }, [user]);
 
   useEffect(() => {
     fetchPhotos();
   }, [fetchPhotos]);
 
-  if (!userId) {
+  // Show auth loading state
+  if (authLoading) {
     return (
-      <div className="bg-white rounded-lg shadow p-6">
-        <h2 className="text-xl font-semibold mb-4">Enter User ID</h2>
-        <p className="text-sm text-gray-600 mb-4">
-          Enter a user ID to view photos. This is temporary - authentication will be added later.
-        </p>
-        <input
-          type="text"
-          placeholder="Enter user ID"
-          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-          onKeyDown={(e) => {
-            if (e.key === 'Enter') {
-              setUserId(e.currentTarget.value);
-            }
-          }}
-        />
+      <div className="flex justify-center items-center py-12">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
+      </div>
+    );
+  }
+
+  // Show login/signup if not authenticated
+  if (!user) {
+    return (
+      <div className="flex justify-center items-center min-h-[500px]">
+        {showLogin ? (
+          <LoginForm onToggleMode={() => setShowLogin(false)} />
+        ) : (
+          <SignUpForm onToggleMode={() => setShowLogin(true)} />
+        )}
       </div>
     );
   }
@@ -91,10 +96,10 @@ export default function PhotoGallery() {
         <h3 className="text-red-800 font-semibold">Error loading photos</h3>
         <p className="text-red-600 mt-2">{error}</p>
         <button
-          onClick={() => setUserId('')}
+          onClick={() => fetchPhotos()}
           className="mt-4 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700"
         >
-          Try different user ID
+          Retry
         </button>
       </div>
     );
@@ -116,10 +121,10 @@ export default function PhotoGallery() {
               Upload Photos
             </button>
             <button
-              onClick={() => setUserId('')}
+              onClick={() => signOut()}
               className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50"
             >
-              Change user ID
+              Sign Out
             </button>
           </div>
         </div>
@@ -139,7 +144,7 @@ export default function PhotoGallery() {
             Cancel
           </button>
         </div>
-        <PhotoUpload userId={userId} onUploadComplete={fetchPhotos} />
+        <PhotoUpload userId={user.userId} onUploadComplete={fetchPhotos} />
       </div>
     );
   }
@@ -148,9 +153,14 @@ export default function PhotoGallery() {
     <div className="space-y-6">
       {/* Header */}
       <div className="flex justify-between items-center">
-        <p className="text-sm text-gray-600">
-          Showing {photos.length} photo{photos.length !== 1 ? 's' : ''} for user: {userId}
-        </p>
+        <div>
+          <p className="text-sm text-gray-600">
+            Showing {photos.length} photo{photos.length !== 1 ? 's' : ''}
+          </p>
+          <p className="text-xs text-gray-500 mt-1">
+            Signed in as {user.email}
+          </p>
+        </div>
         <div className="flex gap-3">
           <button
             onClick={() => setShowUpload(!showUpload)}
@@ -159,17 +169,17 @@ export default function PhotoGallery() {
             {showUpload ? 'Hide Upload' : 'Upload Photos'}
           </button>
           <button
-            onClick={() => setUserId('')}
-            className="text-sm text-blue-600 hover:text-blue-700"
+            onClick={() => signOut()}
+            className="text-sm text-gray-600 hover:text-gray-700 px-4 py-2 border border-gray-300 rounded-lg"
           >
-            Change user
+            Sign Out
           </button>
         </div>
       </div>
 
       {/* Upload section */}
       {showUpload && (
-        <PhotoUpload userId={userId} onUploadComplete={fetchPhotos} />
+        <PhotoUpload userId={user.userId} onUploadComplete={fetchPhotos} />
       )}
 
       {/* Photos grid */}
