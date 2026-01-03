@@ -75,6 +75,7 @@ async function saveMetadata(userId, photoId, s3Key, thumbnailKey, labels, timest
     labelDetails: labels,
     uploadDate: new Date(timestamp).toISOString(),
     createdAt: Date.now(),
+    isPublic: true, // Photos are public by default
     GSI1PK: `USER#${userId}`,
     GSI1SK: `UPLOAD#${timestamp}`
   };

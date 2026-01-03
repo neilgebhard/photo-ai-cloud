@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
+import Link from 'next/link';
 import PhotoCard from './PhotoCard';
 import PhotoUpload from './PhotoUpload';
 import LoginForm from './Auth/LoginForm';
@@ -25,12 +26,18 @@ interface PhotosResponse {
 }
 
 export default function PhotoGallery() {
-  const { user, loading: authLoading, signOut } = useAuth();
+  const { user, loading: authLoading, signOut, refreshAuth } = useAuth();
   const [photos, setPhotos] = useState<Photo[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [showUpload, setShowUpload] = useState(false);
   const [showLogin, setShowLogin] = useState(true);
+
+  // Refresh auth state when component mounts
+  useEffect(() => {
+    refreshAuth();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // Only run once on mount
 
   const fetchPhotos = useCallback(async () => {
     if (!user) {
@@ -162,6 +169,12 @@ export default function PhotoGallery() {
           </p>
         </div>
         <div className="flex gap-3">
+          <Link
+            href="/"
+            className="text-sm text-gray-600 hover:text-gray-700 px-4 py-2 border border-gray-300 rounded-lg"
+          >
+            Public Feed
+          </Link>
           <button
             onClick={() => setShowUpload(!showUpload)}
             className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm"

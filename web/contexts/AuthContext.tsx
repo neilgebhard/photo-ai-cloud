@@ -1,6 +1,6 @@
 'use client';
 
-import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { createContext, useContext, useState, useEffect, useCallback, ReactNode } from 'react';
 import { getCurrentUser, signIn, signOut, signUp, confirmSignUp, fetchAuthSession } from 'aws-amplify/auth';
 
 interface User {
@@ -15,6 +15,7 @@ interface AuthContextType {
   signUp: (email: string, password: string) => Promise<void>;
   confirmSignUp: (email: string, code: string) => Promise<void>;
   signOut: () => Promise<void>;
+  refreshAuth: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -30,28 +31,53 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   async function checkUser() {
     try {
       const currentUser = await getCurrentUser();
-      const session = await fetchAuthSession();
+      await fetchAuthSession(); // Verify session is valid
 
       setUser({
         userId: currentUser.userId,
         email: currentUser.signInDetails?.loginId || '',
       });
     } catch (error) {
+      // User not signed in or session invalid
       setUser(null);
     } finally {
       setLoading(false);
     }
   }
 
+  const refreshAuth = useCallback(async () => {
+    await checkUser();
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
   async function handleSignIn(email: string, password: string) {
     try {
+      // Check if already signed in
+      try {
+        const currentUser = await getCurrentUser();
+        if (currentUser) {
+          // Already signed in, just refresh the user state
+          await checkUser();
+          return;
+        }
+      } catch {
+        // Not signed in, continue with sign in
+      }
+
       const result = await signIn({ username: email, password });
 
       if (result.isSignedIn) {
         await checkUser();
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Sign in error:', error);
+
+      // Provide user-friendly error messages
+      if (error.name === 'UserAlreadyAuthenticatedException') {
+        // User is already signed in, refresh state
+        await checkUser();
+        return;
+      }
+
       throw error;
     }
   }
@@ -104,6 +130,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         signUp: handleSignUp,
         confirmSignUp: handleConfirmSignUp,
         signOut: handleSignOut,
+        refreshAuth,
       }}
     >
       {children}
