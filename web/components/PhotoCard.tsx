@@ -16,12 +16,16 @@ interface Photo {
 
 interface PhotoCardProps {
   photo: Photo;
+  showDelete?: boolean;
+  onDelete?: (photoId: string) => void;
 }
 
-export default function PhotoCard({ photo }: PhotoCardProps) {
+export default function PhotoCard({ photo, showDelete = false, onDelete }: PhotoCardProps) {
   const [thumbnailUrl, setThumbnailUrl] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
+  const [showConfirmDialog, setShowConfirmDialog] = useState(false);
+  const [deleting, setDeleting] = useState(false);
 
   useEffect(() => {
     async function fetchThumbnail() {
@@ -48,10 +52,56 @@ export default function PhotoCard({ photo }: PhotoCardProps) {
     fetchThumbnail();
   }, [photo.photoId, photo.userId, photo.thumbnailKey]);
 
+  const handleDelete = async () => {
+    if (!onDelete) return;
+
+    setDeleting(true);
+    try {
+      const response = await fetch(
+        `/api/photos/${photo.photoId}?userId=${photo.userId}`,
+        { method: 'DELETE' }
+      );
+
+      if (!response.ok) {
+        throw new Error('Failed to delete photo');
+      }
+
+      onDelete(photo.photoId);
+    } catch (err) {
+      console.error('Error deleting photo:', err);
+      alert('Failed to delete photo. Please try again.');
+    } finally {
+      setDeleting(false);
+      setShowConfirmDialog(false);
+    }
+  };
+
   return (
     <div className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow">
       {/* Thumbnail image */}
-      <div className="aspect-square bg-gray-100 relative overflow-hidden">
+      <div className="aspect-square bg-gray-100 relative overflow-hidden group">
+        {/* Delete button overlay */}
+        {showDelete && (
+          <button
+            onClick={() => setShowConfirmDialog(true)}
+            disabled={deleting}
+            className="absolute top-2 right-2 z-10 bg-red-600 text-white p-2 rounded-full opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-700 disabled:bg-gray-400"
+            title="Delete photo"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              className="h-5 w-5"
+              viewBox="0 0 20 20"
+              fill="currentColor"
+            >
+              <path
+                fillRule="evenodd"
+                d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z"
+                clipRule="evenodd"
+              />
+            </svg>
+          </button>
+        )}
         {loading && (
           <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-blue-100 to-purple-100">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
@@ -121,6 +171,34 @@ export default function PhotoCard({ photo }: PhotoCardProps) {
           </div>
         )}
       </div>
+
+      {/* Confirmation Dialog */}
+      {showConfirmDialog && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 max-w-sm mx-4">
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">Delete Photo?</h3>
+            <p className="text-gray-600 mb-6">
+              This action cannot be undone. The photo and its thumbnail will be permanently deleted.
+            </p>
+            <div className="flex gap-3 justify-end">
+              <button
+                onClick={() => setShowConfirmDialog(false)}
+                disabled={deleting}
+                className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 disabled:opacity-50"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleDelete}
+                disabled={deleting}
+                className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 disabled:bg-red-400"
+              >
+                {deleting ? 'Deleting...' : 'Delete'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

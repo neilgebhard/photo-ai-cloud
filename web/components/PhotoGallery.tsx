@@ -26,18 +26,12 @@ interface PhotosResponse {
 }
 
 export default function PhotoGallery() {
-  const { user, loading: authLoading, signOut, refreshAuth } = useAuth();
+  const { user, loading: authLoading, signOut } = useAuth();
   const [photos, setPhotos] = useState<Photo[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [showUpload, setShowUpload] = useState(false);
   const [showLogin, setShowLogin] = useState(true);
-
-  // Refresh auth state when component mounts
-  useEffect(() => {
-    refreshAuth();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []); // Only run once on mount
 
   const fetchPhotos = useCallback(async () => {
     if (!user) {
@@ -66,6 +60,11 @@ export default function PhotoGallery() {
   useEffect(() => {
     fetchPhotos();
   }, [fetchPhotos]);
+
+  const handleDeletePhoto = (photoId: string) => {
+    // Remove photo from local state
+    setPhotos(photos.filter(photo => photo.photoId !== photoId));
+  };
 
   // Show auth loading state
   if (authLoading) {
@@ -198,7 +197,12 @@ export default function PhotoGallery() {
       {/* Photos grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
         {photos.map((photo) => (
-          <PhotoCard key={photo.photoId} photo={photo} />
+          <PhotoCard
+            key={photo.photoId}
+            photo={photo}
+            showDelete={true}
+            onDelete={handleDeletePhoto}
+          />
         ))}
       </div>
     </div>

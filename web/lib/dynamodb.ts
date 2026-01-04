@@ -1,5 +1,5 @@
 import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
-import { DynamoDBDocumentClient, QueryCommand, ScanCommand } from '@aws-sdk/lib-dynamodb';
+import { DynamoDBDocumentClient, QueryCommand, ScanCommand, DeleteCommand, GetCommand } from '@aws-sdk/lib-dynamodb';
 
 const client = new DynamoDBClient({
   region: process.env.AWS_REGION || 'us-west-2',
@@ -151,4 +151,62 @@ export async function getPublicPhotos({
   }
 
   return response;
+}
+
+export interface DeletePhotoParams {
+  userId: string;
+  photoId: string;
+}
+
+export interface DeletePhotoResult {
+  success: boolean;
+  s3Key?: string;
+  thumbnailKey?: string;
+}
+
+export async function deletePhoto({
+  userId,
+  photoId,
+}: DeletePhotoParams): Promise<DeletePhotoResult> {
+  // First, query to find the photo's SK (since we need both PK and SK to delete)
+  const queryParams = {
+    TableName: DYNAMODB_TABLE,
+    KeyConditionExpression: 'PK = :pk',
+    FilterExpression: 'photoId = :photoId',
+    ExpressionAttributeValues: {
+      ':pk': `USER#${userId}`,
+      ':photoId': photoId,
+    },
+    // Note: FilterExpression is applied AFTER the query, so we can't use Limit
+    // We need to scan all user's photos to find the one with matching photoId
+  };
+
+  const queryCommand = new QueryCommand(queryParams);
+  const queryResult = await docClient.send(queryCommand);
+
+  if (!queryResult.Items || queryResult.Items.length === 0) {
+    return { success: false };
+  }
+
+  const item = queryResult.Items[0];
+  const s3Key = item.s3Key;
+  const thumbnailKey = item.thumbnailKey;
+
+  // Delete the item from DynamoDB
+  const deleteParams = {
+    TableName: DYNAMODB_TABLE,
+    Key: {
+      PK: item.PK,
+      SK: item.SK,
+    },
+  };
+
+  const deleteCommand = new DeleteCommand(deleteParams);
+  await docClient.send(deleteCommand);
+
+  return {
+    success: true,
+    s3Key,
+    thumbnailKey,
+  };
 }

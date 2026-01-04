@@ -10,10 +10,10 @@ const THUMBNAILS_BUCKET = process.env.NEXT_PUBLIC_THUMBNAILS_BUCKET!;
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { photoId: string } }
+  { params }: { params: Promise<{ photoId: string }> }
 ) {
   try {
-    const { photoId } = params;
+    const { photoId } = await params;
     const searchParams = request.nextUrl.searchParams;
     const userId = searchParams.get('userId');
     const thumbnailKey = searchParams.get('thumbnailKey');
