@@ -7,6 +7,7 @@ import PhotoCard from './PhotoCard';
 import PhotoUpload from './PhotoUpload';
 import LoginForm from './Auth/LoginForm';
 import SignUpForm from './Auth/SignUpForm';
+import PhotoDetailModal from './PhotoDetailModal';
 
 interface Photo {
   photoId: string;
@@ -32,6 +33,7 @@ export default function PhotoGallery() {
   const [error, setError] = useState<string | null>(null);
   const [showUpload, setShowUpload] = useState(false);
   const [showLogin, setShowLogin] = useState(true);
+  const [selectedPhoto, setSelectedPhoto] = useState<Photo | null>(null);
 
   const fetchPhotos = useCallback(async () => {
     if (!user) {
@@ -202,9 +204,18 @@ export default function PhotoGallery() {
             photo={photo}
             showDelete={true}
             onDelete={handleDeletePhoto}
+            onViewDetails={setSelectedPhoto}
           />
         ))}
       </div>
+
+      {/* Photo Detail Modal */}
+      {selectedPhoto && (
+        <PhotoDetailModal
+          photo={selectedPhoto}
+          onClose={() => setSelectedPhoto(null)}
+        />
+      )}
     </div>
   );
 }

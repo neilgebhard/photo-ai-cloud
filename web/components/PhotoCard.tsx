@@ -18,9 +18,10 @@ interface PhotoCardProps {
   photo: Photo;
   showDelete?: boolean;
   onDelete?: (photoId: string) => void;
+  onViewDetails?: (photo: Photo) => void;
 }
 
-export default function PhotoCard({ photo, showDelete = false, onDelete }: PhotoCardProps) {
+export default function PhotoCard({ photo, showDelete = false, onDelete, onViewDetails }: PhotoCardProps) {
   const [thumbnailUrl, setThumbnailUrl] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
@@ -77,13 +78,19 @@ export default function PhotoCard({ photo, showDelete = false, onDelete }: Photo
   };
 
   return (
-    <div className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow">
+    <div
+      className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow cursor-pointer"
+      onClick={() => onViewDetails?.(photo)}
+    >
       {/* Thumbnail image */}
       <div className="aspect-square bg-gray-100 relative overflow-hidden group">
         {/* Delete button overlay */}
         {showDelete && (
           <button
-            onClick={() => setShowConfirmDialog(true)}
+            onClick={(e) => {
+              e.stopPropagation();
+              setShowConfirmDialog(true);
+            }}
             disabled={deleting}
             className="absolute top-2 right-2 z-10 bg-red-600 text-white p-2 rounded-full opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-700 disabled:bg-gray-400"
             title="Delete photo"
