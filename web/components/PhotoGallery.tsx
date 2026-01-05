@@ -33,7 +33,7 @@ export default function PhotoGallery() {
   const [error, setError] = useState<string | null>(null);
   const [showUpload, setShowUpload] = useState(false);
   const [showLogin, setShowLogin] = useState(true);
-  const [selectedPhoto, setSelectedPhoto] = useState<Photo | null>(null);
+  const [selectedPhotoIndex, setSelectedPhotoIndex] = useState<number | null>(null);
 
   const fetchPhotos = useCallback(async () => {
     if (!user) {
@@ -198,22 +198,23 @@ export default function PhotoGallery() {
 
       {/* Photos grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-        {photos.map((photo) => (
+        {photos.map((photo, index) => (
           <PhotoCard
             key={photo.photoId}
             photo={photo}
             showDelete={true}
             onDelete={handleDeletePhoto}
-            onViewDetails={setSelectedPhoto}
+            onViewDetails={() => setSelectedPhotoIndex(index)}
           />
         ))}
       </div>
 
       {/* Photo Detail Modal */}
-      {selectedPhoto && (
+      {selectedPhotoIndex !== null && (
         <PhotoDetailModal
-          photo={selectedPhoto}
-          onClose={() => setSelectedPhoto(null)}
+          photos={photos}
+          initialIndex={selectedPhotoIndex}
+          onClose={() => setSelectedPhotoIndex(null)}
         />
       )}
     </div>

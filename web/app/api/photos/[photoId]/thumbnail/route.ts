@@ -1,12 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { S3Client, GetObjectCommand } from '@aws-sdk/client-s3';
-import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 
-const s3Client = new S3Client({
-  region: process.env.AWS_REGION || 'us-west-2',
-});
-
-const THUMBNAILS_BUCKET = process.env.NEXT_PUBLIC_THUMBNAILS_BUCKET!;
+const CLOUDFRONT_DOMAIN = process.env.NEXT_PUBLIC_CLOUDFRONT_DOMAIN!;
 
 export async function GET(
   request: NextRequest,
@@ -25,18 +19,10 @@ export async function GET(
       );
     }
 
-    // Create the GetObject command
-    const command = new GetObjectCommand({
-      Bucket: THUMBNAILS_BUCKET,
-      Key: thumbnailKey,
-    });
+    // Construct CloudFront URL directly (no signing needed)
+    const cloudFrontUrl = `https://${CLOUDFRONT_DOMAIN}/${thumbnailKey}`;
 
-    // Generate presigned URL (valid for 1 hour)
-    const signedUrl = await getSignedUrl(s3Client, command, {
-      expiresIn: 3600,
-    });
-
-    return NextResponse.json({ url: signedUrl });
+    return NextResponse.json({ url: cloudFrontUrl });
   } catch (error) {
     console.error('Error generating thumbnail URL:', error);
     return NextResponse.json(

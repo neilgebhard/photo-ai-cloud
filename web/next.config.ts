@@ -13,6 +13,11 @@ const nextConfig: NextConfig = {
         protocol: 'https',
         hostname: '*.s3.amazonaws.com',
       },
+      // CloudFront domain
+      {
+        protocol: 'https',
+        hostname: '*.cloudfront.net',
+      },
     ],
   },
 };

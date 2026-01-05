@@ -15,16 +15,38 @@ interface Photo {
 }
 
 interface PhotoDetailModalProps {
-  photo: Photo;
+  photos: Photo[];
+  initialIndex: number;
   onClose: () => void;
 }
 
-export default function PhotoDetailModal({ photo, onClose }: PhotoDetailModalProps) {
+export default function PhotoDetailModal({ photos, initialIndex, onClose }: PhotoDetailModalProps) {
+  const [currentIndex, setCurrentIndex] = useState(initialIndex);
   const [imageUrl, setImageUrl] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
 
+  const photo = photos[currentIndex];
+  const canGoPrevious = currentIndex > 0;
+  const canGoNext = currentIndex < photos.length - 1;
+
+  const goToPrevious = () => {
+    if (canGoPrevious) {
+      setCurrentIndex(currentIndex - 1);
+    }
+  };
+
+  const goToNext = () => {
+    if (canGoNext) {
+      setCurrentIndex(currentIndex + 1);
+    }
+  };
+
   useEffect(() => {
+    // Reset loading state when photo changes
+    setLoading(true);
+    setError(false);
+
     // Fetch presigned URL for full-size image
     async function fetchFullImage() {
       try {
@@ -50,17 +72,21 @@ export default function PhotoDetailModal({ photo, onClose }: PhotoDetailModalPro
     fetchFullImage();
   }, [photo.photoId, photo.userId, photo.s3Key]);
 
-  // Handle ESC key to close modal
+  // Handle keyboard shortcuts
   useEffect(() => {
-    function handleEscape(e: KeyboardEvent) {
+    function handleKeyboard(e: KeyboardEvent) {
       if (e.key === 'Escape') {
         onClose();
+      } else if (e.key === 'ArrowLeft') {
+        goToPrevious();
+      } else if (e.key === 'ArrowRight') {
+        goToNext();
       }
     }
 
-    window.addEventListener('keydown', handleEscape);
-    return () => window.removeEventListener('keydown', handleEscape);
-  }, [onClose]);
+    window.addEventListener('keydown', handleKeyboard);
+    return () => window.removeEventListener('keydown', handleKeyboard);
+  }, [onClose, goToPrevious, goToNext]);
 
   // Prevent body scroll when modal is open
   useEffect(() => {
@@ -81,7 +107,14 @@ export default function PhotoDetailModal({ photo, onClose }: PhotoDetailModalPro
       >
         {/* Header */}
         <div className="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 flex justify-between items-center">
-          <h2 className="text-xl font-semibold text-gray-900">Photo Details</h2>
+          <div>
+            <h2 className="text-xl font-semibold text-gray-900">Photo Details</h2>
+            {photos.length > 1 && (
+              <p className="text-sm text-gray-500 mt-1">
+                {currentIndex + 1} of {photos.length}
+              </p>
+            )}
+          </div>
           <button
             onClick={onClose}
             className="text-gray-500 hover:text-gray-700 p-2 rounded-full hover:bg-gray-100"
@@ -107,7 +140,55 @@ export default function PhotoDetailModal({ photo, onClose }: PhotoDetailModalPro
         <div className="p-6">
           {/* Image */}
           <div className="mb-6">
-            <div className="relative w-full bg-gray-100 rounded-lg overflow-hidden">
+            <div className="relative w-full bg-gray-100 rounded-lg overflow-hidden group">
+              {/* Previous button */}
+              {photos.length > 1 && canGoPrevious && (
+                <button
+                  onClick={goToPrevious}
+                  className="absolute left-4 top-1/2 -translate-y-1/2 z-20 bg-white/90 hover:bg-white text-gray-800 p-3 rounded-full shadow-lg opacity-0 group-hover:opacity-100 transition-opacity"
+                  title="Previous (←)"
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="h-6 w-6"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M15 19l-7-7 7-7"
+                    />
+                  </svg>
+                </button>
+              )}
+
+              {/* Next button */}
+              {photos.length > 1 && canGoNext && (
+                <button
+                  onClick={goToNext}
+                  className="absolute right-4 top-1/2 -translate-y-1/2 z-20 bg-white/90 hover:bg-white text-gray-800 p-3 rounded-full shadow-lg opacity-0 group-hover:opacity-100 transition-opacity"
+                  title="Next (→)"
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="h-6 w-6"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M9 5l7 7-7 7"
+                    />
+                  </svg>
+                </button>
+              )}
+
               {loading && (
                 <div className="flex items-center justify-center min-h-[400px]">
                   <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
