@@ -81,7 +81,7 @@ export default function PublicFeed() {
         {user ? (
           <Link
             href="/gallery"
-            className="mt-4 inline-block px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+            className="mt-4 inline-block px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 cursor-pointer"
           >
             Go to My Gallery
           </Link>
@@ -107,7 +107,7 @@ export default function PublicFeed() {
         {user && (
           <Link
             href="/gallery"
-            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm"
+            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm cursor-pointer"
           >
             My Gallery
           </Link>

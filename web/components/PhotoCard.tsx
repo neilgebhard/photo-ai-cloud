@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
+import Button from '@/components/ui/Button';
 
 interface Photo {
   photoId: string;
@@ -92,7 +93,7 @@ export default function PhotoCard({ photo, showDelete = false, onDelete, onViewD
               setShowConfirmDialog(true);
             }}
             disabled={deleting}
-            className="absolute top-2 right-2 z-10 bg-red-600 text-white p-2 rounded-full opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-700 disabled:bg-gray-400"
+            className="absolute top-2 right-2 z-10 bg-red-600 text-white p-2 rounded-full opacity-80 hover:opacity-100 transition-opacity hover:bg-red-700 disabled:bg-gray-400 cursor-pointer"
             title="Delete photo"
           >
             <svg
@@ -188,20 +189,22 @@ export default function PhotoCard({ photo, showDelete = false, onDelete, onViewD
               This action cannot be undone. The photo and its thumbnail will be permanently deleted.
             </p>
             <div className="flex gap-3 justify-end">
-              <button
+              <Button
                 onClick={() => setShowConfirmDialog(false)}
                 disabled={deleting}
-                className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 disabled:opacity-50"
+                variant="secondary"
+                size="md"
               >
                 Cancel
-              </button>
-              <button
+              </Button>
+              <Button
                 onClick={handleDelete}
-                disabled={deleting}
-                className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 disabled:bg-red-400"
+                variant="danger"
+                size="md"
+                isLoading={deleting}
               >
-                {deleting ? 'Deleting...' : 'Delete'}
-              </button>
+                Delete
+              </Button>
             </div>
           </div>
         </div>

@@ -8,6 +8,7 @@ import PhotoUpload from './PhotoUpload';
 import LoginForm from './Auth/LoginForm';
 import SignUpForm from './Auth/SignUpForm';
 import PhotoDetailModal from './PhotoDetailModal';
+import Button from '@/components/ui/Button';
 
 interface Photo {
   photoId: string;
@@ -103,12 +104,14 @@ export default function PhotoGallery() {
       <div className="bg-red-50 border border-red-200 rounded-lg p-6">
         <h3 className="text-red-800 font-semibold">Error loading photos</h3>
         <p className="text-red-600 mt-2">{error}</p>
-        <button
+        <Button
           onClick={() => fetchPhotos()}
-          className="mt-4 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700"
+          variant="danger"
+          size="md"
+          className="mt-4"
         >
           Retry
-        </button>
+        </Button>
       </div>
     );
   }
@@ -122,18 +125,20 @@ export default function PhotoGallery() {
             Upload some photos to see them here!
           </p>
           <div className="mt-4 flex gap-3 justify-center">
-            <button
+            <Button
               onClick={() => setShowUpload(true)}
-              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+              variant="primary"
+              size="md"
             >
               Upload Photos
-            </button>
-            <button
+            </Button>
+            <Button
               onClick={() => signOut()}
-              className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50"
+              variant="secondary"
+              size="md"
             >
               Sign Out
-            </button>
+            </Button>
           </div>
         </div>
       </div>
@@ -145,12 +150,13 @@ export default function PhotoGallery() {
       <div className="space-y-4">
         <div className="flex justify-between items-center">
           <h2 className="text-xl font-semibold text-gray-900">Upload Photos</h2>
-          <button
+          <Button
             onClick={() => setShowUpload(false)}
-            className="text-sm text-gray-600 hover:text-gray-700"
+            variant="ghost"
+            size="sm"
           >
             Cancel
-          </button>
+          </Button>
         </div>
         <PhotoUpload userId={user.userId} onUploadComplete={fetchPhotos} />
       </div>
@@ -170,24 +176,13 @@ export default function PhotoGallery() {
           </p>
         </div>
         <div className="flex gap-3">
-          <Link
-            href="/"
-            className="text-sm text-gray-600 hover:text-gray-700 px-4 py-2 border border-gray-300 rounded-lg"
-          >
-            Public Feed
-          </Link>
-          <button
+          <Button
             onClick={() => setShowUpload(!showUpload)}
-            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm"
+            variant="primary"
+            size="sm"
           >
             {showUpload ? 'Hide Upload' : 'Upload Photos'}
-          </button>
-          <button
-            onClick={() => signOut()}
-            className="text-sm text-gray-600 hover:text-gray-700 px-4 py-2 border border-gray-300 rounded-lg"
-          >
-            Sign Out
-          </button>
+          </Button>
         </div>
       </div>
 

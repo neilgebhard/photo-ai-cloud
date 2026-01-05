@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
+import Button from '@/components/ui/Button';
 
 interface Photo {
   photoId: string;
@@ -106,7 +107,7 @@ export default function PhotoDetailModal({ photos, initialIndex, onClose }: Phot
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 flex justify-between items-center">
+        <div className="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 flex justify-between items-center z-10">
           <div>
             <h2 className="text-xl font-semibold text-gray-900">Photo Details</h2>
             {photos.length > 1 && (
@@ -115,8 +116,10 @@ export default function PhotoDetailModal({ photos, initialIndex, onClose }: Phot
               </p>
             )}
           </div>
-          <button
+          <Button
             onClick={onClose}
+            variant="ghost"
+            size="sm"
             className="text-gray-500 hover:text-gray-700 p-2 rounded-full hover:bg-gray-100"
             title="Close (ESC)"
           >
@@ -134,7 +137,7 @@ export default function PhotoDetailModal({ photos, initialIndex, onClose }: Phot
                 d="M6 18L18 6M6 6l12 12"
               />
             </svg>
-          </button>
+          </Button>
         </div>
 
         <div className="p-6">
@@ -145,7 +148,7 @@ export default function PhotoDetailModal({ photos, initialIndex, onClose }: Phot
               {photos.length > 1 && canGoPrevious && (
                 <button
                   onClick={goToPrevious}
-                  className="absolute left-4 top-1/2 -translate-y-1/2 z-20 bg-white/90 hover:bg-white text-gray-800 p-3 rounded-full shadow-lg opacity-0 group-hover:opacity-100 transition-opacity"
+                  className="absolute left-4 top-1/2 -translate-y-1/2 z-20 bg-white/90 hover:bg-white text-gray-800 p-3 rounded-full shadow-lg opacity-90 hover:opacity-100 transition-opacity cursor-pointer"
                   title="Previous (←)"
                 >
                   <svg
@@ -169,7 +172,7 @@ export default function PhotoDetailModal({ photos, initialIndex, onClose }: Phot
               {photos.length > 1 && canGoNext && (
                 <button
                   onClick={goToNext}
-                  className="absolute right-4 top-1/2 -translate-y-1/2 z-20 bg-white/90 hover:bg-white text-gray-800 p-3 rounded-full shadow-lg opacity-0 group-hover:opacity-100 transition-opacity"
+                  className="absolute right-4 top-1/2 -translate-y-1/2 z-20 bg-white/90 hover:bg-white text-gray-800 p-3 rounded-full shadow-lg opacity-90 hover:opacity-100 transition-opacity cursor-pointer"
                   title="Next (→)"
                 >
                   <svg

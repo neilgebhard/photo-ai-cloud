@@ -2,6 +2,7 @@
 
 import { useState, FormEvent } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
+import Button from '@/components/ui/Button';
 
 interface LoginFormProps {
   onToggleMode: () => void;
@@ -69,24 +70,28 @@ export default function LoginForm({ onToggleMode }: LoginFormProps) {
           />
         </div>
 
-        <button
+        <Button
           type="submit"
-          disabled={loading}
-          className="w-full py-2 px-4 bg-blue-600 text-white rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
+          variant="primary"
+          size="md"
+          isLoading={loading}
+          className="w-full"
         >
-          {loading ? 'Signing in...' : 'Sign In'}
-        </button>
+          Sign In
+        </Button>
       </form>
 
       <div className="mt-6 text-center">
         <p className="text-sm text-gray-600">
           Don't have an account?{' '}
-          <button
+          <Button
             onClick={onToggleMode}
-            className="text-blue-600 hover:text-blue-700 font-medium"
+            variant="ghost"
+            size="sm"
+            className="inline"
           >
             Sign up
-          </button>
+          </Button>
         </p>
       </div>
     </div>
