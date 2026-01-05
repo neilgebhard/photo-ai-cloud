@@ -42,3 +42,13 @@ output "region" {
   description = "AWS region where resources are deployed"
   value       = var.aws_region
 }
+
+output "cloudfront_distribution_id" {
+  description = "CloudFront distribution ID for images"
+  value       = aws_cloudfront_distribution.images.id
+}
+
+output "cloudfront_domain_name" {
+  description = "CloudFront domain name for serving images"
+  value       = aws_cloudfront_distribution.images.domain_name
+}
