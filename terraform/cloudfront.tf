@@ -51,7 +51,7 @@ resource "aws_cloudfront_distribution" "images" {
 
   # Cache behavior for thumbnails
   ordered_cache_behavior {
-    path_pattern           = "*"
+    path_pattern           = "*/thumbnails/*"
     target_origin_id       = "S3-thumbnails"
     viewer_protocol_policy = "redirect-to-https"
     allowed_methods        = ["GET", "HEAD", "OPTIONS"]
