@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { useAuth } from '@/contexts/AuthContext';
 import Button from '@/components/ui/Button';
 import { usePathname } from 'next/navigation';
+import { Home, Image, LogIn, LogOut } from 'lucide-react';
 
 export default function Navbar() {
   const { user, loading, signOut } = useAuth();
@@ -27,24 +28,26 @@ export default function Navbar() {
             <div className="hidden sm:flex items-center gap-3">
               <Link
                 href="/"
-                className={`text-sm px-3 py-2 rounded-lg cursor-pointer ${
+                className={`text-sm px-3 py-2 rounded-lg cursor-pointer flex items-center gap-2 ${
                   pathname === '/'
                     ? 'text-blue-600 font-medium'
                     : 'text-gray-700 hover:text-gray-900'
                 } focus:outline-none focus:ring-2 focus:ring-blue-500`}
               >
+                <Home size={16} />
                 Public Feed
               </Link>
 
               {user && (
                 <Link
                   href="/gallery"
-                  className={`text-sm px-3 py-2 rounded-lg cursor-pointer ${
+                  className={`text-sm px-3 py-2 rounded-lg cursor-pointer flex items-center gap-2 ${
                     pathname === '/gallery'
                       ? 'text-blue-600 font-medium'
                       : 'text-gray-700 hover:text-gray-900'
                   } focus:outline-none focus:ring-2 focus:ring-blue-500`}
                 >
+                  <Image size={16} />
                   My Gallery
                 </Link>
               )}
@@ -58,13 +61,15 @@ export default function Navbar() {
                 <span className="hidden md:inline text-sm text-gray-600">
                   {user.email}
                 </span>
-                <Button variant="secondary" size="sm" onClick={() => signOut()}>
+                <Button variant="secondary" size="sm" onClick={() => signOut()} className="flex items-center gap-2">
+                  <LogOut size={16} />
                   Sign Out
                 </Button>
               </div>
             ) : (
               <Link href="/gallery">
-                <Button variant="primary" size="sm">
+                <Button variant="primary" size="sm" className="flex items-center gap-2">
+                  <LogIn size={16} />
                   Sign In
                 </Button>
               </Link>

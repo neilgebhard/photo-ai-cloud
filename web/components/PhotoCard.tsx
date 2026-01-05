@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import Button from '@/components/ui/Button';
+import { Trash2, Calendar, Tag, TrendingUp } from 'lucide-react';
 
 interface Photo {
   photoId: string;
@@ -96,18 +97,7 @@ export default function PhotoCard({ photo, showDelete = false, onDelete, onViewD
             className="absolute top-2 right-2 z-10 bg-red-600 text-white p-2 rounded-full opacity-80 hover:opacity-100 transition-opacity hover:bg-red-700 disabled:bg-gray-400 cursor-pointer"
             title="Delete photo"
           >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              className="h-5 w-5"
-              viewBox="0 0 20 20"
-              fill="currentColor"
-            >
-              <path
-                fillRule="evenodd"
-                d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z"
-                clipRule="evenodd"
-              />
-            </svg>
+            <Trash2 size={20} />
           </button>
         )}
         {loading && (
@@ -138,16 +128,18 @@ export default function PhotoCard({ photo, showDelete = false, onDelete, onViewD
 
       {/* Photo metadata */}
       <div className="p-4">
-        <div className="mb-3">
-          <p className="text-xs text-gray-500">
-            {new Date(photo.uploadDate).toLocaleDateString()}
-          </p>
+        <div className="mb-3 flex items-center gap-1.5 text-xs text-gray-500">
+          <Calendar size={14} />
+          {new Date(photo.uploadDate).toLocaleDateString()}
         </div>
 
         {/* AI Labels */}
         {photo.labels && photo.labels.length > 0 && (
           <div>
-            <p className="text-xs font-semibold text-gray-700 mb-2">AI Labels:</p>
+            <p className="text-xs font-semibold text-gray-700 mb-2 flex items-center gap-1.5">
+              <Tag size={14} />
+              AI Labels:
+            </p>
             <div className="flex flex-wrap gap-1">
               {photo.labels.slice(0, 5).map((label, index) => (
                 <span
@@ -169,7 +161,10 @@ export default function PhotoCard({ photo, showDelete = false, onDelete, onViewD
         {/* Label confidence (show top 3) */}
         {photo.labelDetails && photo.labelDetails.length > 0 && (
           <div className="mt-3 pt-3 border-t border-gray-100">
-            <p className="text-xs font-semibold text-gray-700 mb-1">Confidence:</p>
+            <p className="text-xs font-semibold text-gray-700 mb-1 flex items-center gap-1.5">
+              <TrendingUp size={14} />
+              Confidence:
+            </p>
             {photo.labelDetails.slice(0, 3).map((detail, index) => (
               <div key={index} className="flex justify-between items-center text-xs text-gray-600 mb-1">
                 <span className="truncate">{detail.name}</span>

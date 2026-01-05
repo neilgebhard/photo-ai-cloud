@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import Button from '@/components/ui/Button';
+import { X, ChevronLeft, ChevronRight, Calendar, Tag, TrendingUp } from 'lucide-react';
 
 interface Photo {
   photoId: string;
@@ -123,20 +124,7 @@ export default function PhotoDetailModal({ photos, initialIndex, onClose }: Phot
             className="text-gray-500 hover:text-gray-700 p-2 rounded-full hover:bg-gray-100"
             title="Close (ESC)"
           >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              className="h-6 w-6"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M6 18L18 6M6 6l12 12"
-              />
-            </svg>
+            <X size={24} />
           </Button>
         </div>
 
@@ -151,20 +139,7 @@ export default function PhotoDetailModal({ photos, initialIndex, onClose }: Phot
                   className="absolute left-4 top-1/2 -translate-y-1/2 z-20 bg-white/90 hover:bg-white text-gray-800 p-3 rounded-full shadow-lg opacity-90 hover:opacity-100 transition-opacity cursor-pointer"
                   title="Previous (←)"
                 >
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    className="h-6 w-6"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M15 19l-7-7 7-7"
-                    />
-                  </svg>
+                  <ChevronLeft size={24} />
                 </button>
               )}
 
@@ -175,20 +150,7 @@ export default function PhotoDetailModal({ photos, initialIndex, onClose }: Phot
                   className="absolute right-4 top-1/2 -translate-y-1/2 z-20 bg-white/90 hover:bg-white text-gray-800 p-3 rounded-full shadow-lg opacity-90 hover:opacity-100 transition-opacity cursor-pointer"
                   title="Next (→)"
                 >
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    className="h-6 w-6"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M9 5l7 7-7 7"
-                    />
-                  </svg>
+                  <ChevronRight size={24} />
                 </button>
               )}
 
@@ -228,8 +190,11 @@ export default function PhotoDetailModal({ photos, initialIndex, onClose }: Phot
               <h3 className="text-lg font-semibold text-gray-900 mb-3">Information</h3>
               <div className="space-y-2">
                 <div>
-                  <span className="text-sm font-medium text-gray-500">Upload Date:</span>
-                  <p className="text-gray-900">
+                  <span className="text-sm font-medium text-gray-500 flex items-center gap-1.5">
+                    <Calendar size={16} />
+                    Upload Date:
+                  </span>
+                  <p className="text-gray-900 ml-5">
                     {new Date(photo.uploadDate).toLocaleString()}
                   </p>
                 </div>
@@ -242,7 +207,8 @@ export default function PhotoDetailModal({ photos, initialIndex, onClose }: Phot
 
             {/* Right column - AI Labels */}
             <div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-3">
+              <h3 className="text-lg font-semibold text-gray-900 mb-3 flex items-center gap-2">
+                <Tag size={20} />
                 AI-Detected Labels ({photo.labelDetails.length})
               </h3>
               <div className="space-y-2 max-h-[300px] overflow-y-auto">
