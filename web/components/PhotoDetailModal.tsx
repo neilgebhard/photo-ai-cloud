@@ -169,13 +169,16 @@ export default function PhotoDetailModal({ photos, initialIndex, onClose }: Phot
               )}
 
               {imageUrl && !error && (
-                <div className="relative w-full" style={{ minHeight: '400px' }}>
+                <div
+                  className="relative w-full flex items-center justify-center"
+                  style={{ maxHeight: '80vh', minHeight: '400px' }}
+                >
                   <Image
                     src={imageUrl}
                     alt={photo.labels[0] || 'Photo'}
                     width={1200}
                     height={800}
-                    className="w-full h-auto rounded-lg"
+                    className="w-full max-h-[80vh] object-contain rounded-lg"
                     onError={() => setError(true)}
                   />
                 </div>
