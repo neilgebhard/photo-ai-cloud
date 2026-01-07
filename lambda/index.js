@@ -26,16 +26,56 @@ async function streamToBuffer(stream) {
 }
 
 /**
+ * Extract metadata from image buffer using sharp
+ */
+async function extractMetadata(imageBuffer) {
+  try {
+    const metadata = await sharp(imageBuffer).metadata();
+
+    return {
+      width: metadata.width,
+      height: metadata.height,
+      format: metadata.format,
+      size: imageBuffer.length,
+
+      exif: metadata.exif ? {
+        make: metadata.exif.Make?.toString('utf-8').replace(/\0/g, '').trim() || null,
+        model: metadata.exif.Model?.toString('utf-8').replace(/\0/g, '').trim() || null,
+        iso: metadata.exif.ISOSpeedRatings || null,
+        shutterSpeed: metadata.exif.ExposureTime || null,
+        aperture: metadata.exif.FNumber || null,
+        focalLength: metadata.exif.FocalLength || null,
+        dateTaken: metadata.exif.DateTimeOriginal?.toString('utf-8').replace(/\0/g, '').trim() || null,
+      } : null
+    };
+  } catch (error) {
+    console.warn('Error extracting metadata:', error);
+    return {
+      width: null,
+      height: null,
+      format: null,
+      size: imageBuffer.length,
+      exif: null
+    };
+  }
+}
+
+/**
  * Generate thumbnail from image buffer
  */
 async function generateThumbnail(imageBuffer) {
-  return await sharp(imageBuffer)
+  const thumbnailBuffer = await sharp(imageBuffer)
     .resize(THUMBNAIL_SIZE, THUMBNAIL_SIZE, {
       fit: 'cover',
       position: 'center'
     })
     .jpeg({ quality: 80 })
     .toBuffer();
+
+  return {
+    buffer: thumbnailBuffer,
+    size: thumbnailBuffer.length
+  };
 }
 
 /**
@@ -63,7 +103,7 @@ async function detectLabels(bucket, key) {
 /**
  * Save photo metadata to DynamoDB
  */
-async function saveMetadata(userId, photoId, s3Key, thumbnailKey, labels, timestamp) {
+async function saveMetadata(userId, photoId, s3Key, thumbnailKey, labels, timestamp, metadata, thumbnailSize) {
   const item = {
     PK: `USER#${userId}`,
     SK: `PHOTO#${timestamp}#${photoId}`,
@@ -76,6 +116,17 @@ async function saveMetadata(userId, photoId, s3Key, thumbnailKey, labels, timest
     uploadDate: new Date(timestamp).toISOString(),
     createdAt: Date.now(),
     isPublic: true, // Photos are public by default
+
+    // Image metadata
+    width: metadata.width,
+    height: metadata.height,
+    format: metadata.format,
+    fileSize: metadata.size,
+    thumbnailSize: thumbnailSize,
+
+    // EXIF data (only include if present)
+    ...(metadata.exif && { exif: metadata.exif }),
+
     GSI1PK: `USER#${userId}`,
     GSI1SK: `UPLOAD#${timestamp}`
   };
@@ -120,9 +171,14 @@ exports.handler = async (event) => {
     const s3Response = await s3Client.send(getCommand);
     const imageBuffer = await streamToBuffer(s3Response.Body);
 
+    // Extract metadata
+    console.log('Extracting image metadata...');
+    const imageMetadata = await extractMetadata(imageBuffer);
+    console.log('Metadata extracted:', JSON.stringify(imageMetadata, null, 2));
+
     // Generate thumbnail
     console.log('Generating thumbnail...');
-    const thumbnailBuffer = await generateThumbnail(imageBuffer);
+    const thumbnailResult = await generateThumbnail(imageBuffer);
     const thumbnailKey = `${userId}/thumbnails/${photoId}_thumb.jpg`;
 
     // Upload thumbnail to S3
@@ -130,7 +186,7 @@ exports.handler = async (event) => {
     const putCommand = new PutObjectCommand({
       Bucket: THUMBNAILS_BUCKET,
       Key: thumbnailKey,
-      Body: thumbnailBuffer,
+      Body: thumbnailResult.buffer,
       ContentType: 'image/jpeg'
     });
     await s3Client.send(putCommand);
@@ -142,8 +198,8 @@ exports.handler = async (event) => {
 
     // Save metadata to DynamoDB
     console.log('Saving metadata to DynamoDB...');
-    const metadata = await saveMetadata(userId, photoId, key, thumbnailKey, labels, timestamp);
-    console.log('Metadata saved:', metadata);
+    const savedMetadata = await saveMetadata(userId, photoId, key, thumbnailKey, labels, timestamp, imageMetadata, thumbnailResult.size);
+    console.log('Metadata saved:', savedMetadata);
 
     return {
       statusCode: 200,

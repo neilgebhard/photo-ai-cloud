@@ -9,6 +9,16 @@ export const docClient = DynamoDBDocumentClient.from(client);
 
 const DYNAMODB_TABLE = process.env.DYNAMODB_TABLE!;
 
+export interface ExifData {
+  make?: string | null;
+  model?: string | null;
+  iso?: number | null;
+  shutterSpeed?: number | null;
+  aperture?: number | null;
+  focalLength?: number | null;
+  dateTaken?: string | null;
+}
+
 export interface Photo {
   photoId: string;
   userId: string;
@@ -19,6 +29,14 @@ export interface Photo {
   uploadDate: string;
   createdAt: number;
   isPublic?: boolean;
+
+  // Image metadata
+  width?: number;
+  height?: number;
+  format?: string;
+  fileSize?: number;
+  thumbnailSize?: number;
+  exif?: ExifData | null;
 }
 
 export interface GetPhotosParams {
@@ -73,6 +91,14 @@ export async function getPhotos({
     uploadDate: item.uploadDate,
     createdAt: item.createdAt,
     isPublic: item.isPublic ?? false,
+
+    // Image metadata
+    width: item.width,
+    height: item.height,
+    format: item.format,
+    fileSize: item.fileSize,
+    thumbnailSize: item.thumbnailSize,
+    exif: item.exif || null,
   }));
 
   const response: GetPhotosResult = {
@@ -135,6 +161,14 @@ export async function getPublicPhotos({
       uploadDate: item.uploadDate,
       createdAt: item.createdAt,
       isPublic: item.isPublic ?? false,
+
+      // Image metadata
+      width: item.width,
+      height: item.height,
+      format: item.format,
+      fileSize: item.fileSize,
+      thumbnailSize: item.thumbnailSize,
+      exif: item.exif || null,
     }))
     .sort((a, b) => b.createdAt - a.createdAt);
 
