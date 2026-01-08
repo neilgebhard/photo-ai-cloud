@@ -56,7 +56,8 @@ interface PhotoDetailModalProps {
 export default function PhotoDetailModal({ photos, initialIndex, onClose }: PhotoDetailModalProps) {
   const [currentIndex, setCurrentIndex] = useState(initialIndex);
   const [imageUrl, setImageUrl] = useState<string | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [previousImageUrl, setPreviousImageUrl] = useState<string | null>(null);
+  const [isTransitioning, setIsTransitioning] = useState(false);
   const [error, setError] = useState(false);
 
   const photo = photos[currentIndex];
@@ -76,34 +77,41 @@ export default function PhotoDetailModal({ photos, initialIndex, onClose }: Phot
   };
 
   useEffect(() => {
-    // Reset loading state when photo changes
-    setLoading(true);
+    // Construct CloudFront URL directly (no API call needed)
+    const fullImageUrl = `https://${process.env.NEXT_PUBLIC_CLOUDFRONT_DOMAIN}/${photo.s3Key}`;
+
+    // Save current image as "previous" before transitioning
+    if (imageUrl && imageUrl !== fullImageUrl) {
+      setPreviousImageUrl(imageUrl);
+      setIsTransitioning(true);
+    }
+
+    setImageUrl(fullImageUrl);
     setError(false);
+  }, [photo.photoId, photo.s3Key, imageUrl]);
 
-    // Fetch presigned URL for full-size image
-    async function fetchFullImage() {
-      try {
-        const response = await fetch(
-          `/api/photos/${photo.photoId}/full?userId=${photo.userId}&s3Key=${encodeURIComponent(photo.s3Key)}`
-        );
-
-        if (!response.ok) {
-          throw new Error('Failed to fetch image');
-        }
-
-        const data = await response.json();
-        setImageUrl(data.url);
-        setError(false);
-      } catch (err) {
-        console.error('Error fetching full image:', err);
-        setError(true);
-      } finally {
-        setLoading(false);
+  // Preload adjacent images for smooth navigation
+  useEffect(() => {
+    // Preload next image if available
+    if (canGoNext) {
+      const nextPhoto = photos[currentIndex + 1];
+      if (nextPhoto) {
+        const nextUrl = `https://${process.env.NEXT_PUBLIC_CLOUDFRONT_DOMAIN}/${nextPhoto.s3Key}`;
+        const img = document.createElement('img');
+        img.src = nextUrl;
       }
     }
 
-    fetchFullImage();
-  }, [photo.photoId, photo.userId, photo.s3Key]);
+    // Preload previous image if available
+    if (canGoPrevious) {
+      const prevPhoto = photos[currentIndex - 1];
+      if (prevPhoto) {
+        const prevUrl = `https://${process.env.NEXT_PUBLIC_CLOUDFRONT_DOMAIN}/${prevPhoto.s3Key}`;
+        const img = document.createElement('img');
+        img.src = prevUrl;
+      }
+    }
+  }, [currentIndex, photos, canGoNext, canGoPrevious]);
 
   // Handle keyboard shortcuts
   useEffect(() => {
@@ -185,12 +193,6 @@ export default function PhotoDetailModal({ photos, initialIndex, onClose }: Phot
                 </button>
               )}
 
-              {loading && (
-                <div className="flex items-center justify-center min-h-[400px]">
-                  <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
-                </div>
-              )}
-
               {error && (
                 <div className="flex items-center justify-center min-h-[400px]">
                   <div className="text-center">
@@ -199,19 +201,41 @@ export default function PhotoDetailModal({ photos, initialIndex, onClose }: Phot
                 </div>
               )}
 
-              {imageUrl && !error && (
+              {!error && (
                 <div
                   className="relative w-full flex items-center justify-center"
                   style={{ maxHeight: '80vh', minHeight: '400px' }}
                 >
-                  <Image
-                    src={imageUrl}
-                    alt={photo.labels[0] || 'Photo'}
-                    width={1200}
-                    height={800}
-                    className="w-full max-h-[80vh] object-contain rounded-lg"
-                    onError={() => setError(true)}
-                  />
+                  {/* Previous image - fades out during transition */}
+                  {isTransitioning && previousImageUrl && (
+                    <div className="absolute inset-0 transition-opacity duration-300 opacity-0">
+                      <Image
+                        src={previousImageUrl}
+                        alt="Previous photo"
+                        width={1200}
+                        height={800}
+                        className="w-full max-h-[80vh] object-contain rounded-lg"
+                      />
+                    </div>
+                  )}
+
+                  {/* Current image - fades in during transition */}
+                  {imageUrl && (
+                    <Image
+                      src={imageUrl}
+                      alt={photo.labels[0] || 'Photo'}
+                      width={1200}
+                      height={800}
+                      className="w-full max-h-[80vh] object-contain rounded-lg transition-opacity duration-300"
+                      onLoadingComplete={() => {
+                        // Clear transition state when new image is ready
+                        setIsTransitioning(false);
+                        setPreviousImageUrl(null);
+                      }}
+                      onError={() => setError(true)}
+                      priority
+                    />
+                  )}
                 </div>
               )}
             </div>
