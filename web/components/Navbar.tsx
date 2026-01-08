@@ -29,10 +29,10 @@ export default function Navbar() {
             <div className="hidden sm:flex items-center gap-3">
               <Link
                 href="/"
-                className={`text-sm px-3 py-2 rounded-lg cursor-pointer flex items-center gap-2 ${
+                className={`text-sm px-3 py-2 rounded-lg cursor-pointer flex items-center gap-2 transition-colors ${
                   pathname === '/'
-                    ? 'text-blue-600 font-medium'
-                    : 'text-gray-700 hover:text-gray-900'
+                    ? 'text-gray-900 font-bold'
+                    : 'text-gray-700 hover:text-gray-900 hover:bg-gray-100'
                 } focus:outline-none focus:ring-2 focus:ring-blue-500`}
               >
                 <Home size={16} />
@@ -42,10 +42,10 @@ export default function Navbar() {
               {user && (
                 <Link
                   href="/gallery"
-                  className={`text-sm px-3 py-2 rounded-lg cursor-pointer flex items-center gap-2 ${
+                  className={`text-sm px-3 py-2 rounded-lg cursor-pointer flex items-center gap-2 transition-colors ${
                     pathname === '/gallery'
-                      ? 'text-blue-600 font-medium'
-                      : 'text-gray-700 hover:text-gray-900'
+                      ? 'text-gray-900 font-bold'
+                      : 'text-gray-700 hover:text-gray-900 hover:bg-gray-100'
                   } focus:outline-none focus:ring-2 focus:ring-blue-500`}
                 >
                   <Image size={16} />
