@@ -9,6 +9,7 @@ import LoginForm from './Auth/LoginForm';
 import SignUpForm from './Auth/SignUpForm';
 import PhotoDetailModal from './PhotoDetailModal';
 import Button from '@/components/ui/Button';
+import Loader from '@/components/ui/Loader';
 
 interface Photo {
   photoId: string;
@@ -73,7 +74,7 @@ export default function PhotoGallery() {
   if (authLoading) {
     return (
       <div className="flex justify-center items-center py-12">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
+        <Loader />
       </div>
     );
   }
@@ -94,7 +95,7 @@ export default function PhotoGallery() {
   if (loading) {
     return (
       <div className="flex justify-center items-center py-12">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
+        <Loader />
       </div>
     );
   }
