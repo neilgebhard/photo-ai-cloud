@@ -4,10 +4,11 @@ import Link from 'next/link';
 import { useAuth } from '@/contexts/AuthContext';
 import Button from '@/components/ui/Button';
 import { usePathname } from 'next/navigation';
-import { Home, Image, LogIn, LogOut } from 'lucide-react';
+import { Home, Image, LogIn } from 'lucide-react';
+import UserDropdown from '@/components/UserDropdown';
 
 export default function Navbar() {
-  const { user, loading, signOut } = useAuth();
+  const { user, loading } = useAuth();
   const pathname = usePathname();
 
   return (
@@ -57,15 +58,7 @@ export default function Navbar() {
             {loading ? (
               <div className="w-20 h-8 bg-gray-200 animate-pulse rounded" />
             ) : user ? (
-              <div className="flex items-center gap-3">
-                <span className="hidden md:inline text-sm text-gray-600">
-                  {user.email}
-                </span>
-                <Button variant="secondary" size="sm" onClick={() => signOut()} className="flex items-center gap-2">
-                  <LogOut size={16} />
-                  Sign Out
-                </Button>
-              </div>
+              <UserDropdown />
             ) : (
               <Link href="/gallery">
                 <Button variant="primary" size="sm" className="flex items-center gap-2">
